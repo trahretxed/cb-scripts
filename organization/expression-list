@@ -1,0 +1,20 @@
+# This file is used by the validate-expression shell script to load expressions that match files you may want to delete from cbr/cbz files. 
+# Lines may be commented out using #. You may also add lines of your own, comma delimited, in the order of title,expression,output,message. 
+# The title column is simply a readable plain text description of the expression that is presented to the user in the script.
+# The expression column holds each expression we wish to match when parsing cbr/cbz files. Be careful here as you don't want to match files you wish to keep. 
+# The output column has two choices, count and list. Count returns the number of times the expression matches a file. 
+# This should be used with files that are pretty safe to delete like text files or files left behind by the OS (Thumbs.db for example). 
+# List should be used for files where we may match on files we want to keep. The user is presented with a list of file matches to they can decide if it will 
+# delete wanted files in advance. The final column is the message column. This is a message that is presented to the user when they are prompted whether 
+# they want to run the expression in column 1. This should include warnings or things the user should be watching before deciding to run the expression.
+
+# Thumbs.db,Thumbs\.db$,count,It is likely safe to delete these files.
+sfv,.+\.sfv$,list,It is likely safe to delete these files.
+# txt,.+\.txt$,count,It is likely safe to delete these files.
+# nfo,.+\.nfo$,count,It is likely safe to delete these files.
+# bat,.+\.bat$,count,It is likely safe to delete these files. # This isn't the dumbest thing I've seen left in a cbr/z
+# html,.+\.htm[l]?$,count,It is likely safe to delete these files.
+# parity,.+\.P(A|[0-9])(R|[0-9])$,count, It is likely safe to delete these files.
+# DS_Stores,\.DS_Store$,count,It is likely safe to delete these files.
+# xml,.+\.xml$,count,Files such as Comicinfo.xml store metadata. Check the list above for a list of matching files. Do not delete these files if you wish to keep your metadata.
+# *tag.jpg,.+tag\.jpg,list,This removes any jpg files that end with 'tag'.

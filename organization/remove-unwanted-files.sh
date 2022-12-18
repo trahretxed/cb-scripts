@@ -1,0 +1,125 @@
+#! /bin/bash
+
+# Intro text
+
+# clear
+# echo "This script is intended to remove unwanted files from cbz and cbr files. These may include files left behind by the OS, informational text files, or tags/signature images left by the scanner." 
+# echo
+# echo "Regular expressions are used to match the files from a blacklist that is maintained in a file called 'expression-list'. This file may be edited to add or remove expressions as needed."
+# echo
+# echo "For each expression in the list, you will be prompted with some information on either the number of files that will be removed or given a list of affected files. This should help you decide if you want to run that particular expression."
+# echo
+# read -n 1 -s -r -p "Press any key to continue"
+
+# clear
+# echo "This entire process can take some time, depending on the size of your library. There are two parts to the process. The first portion is shorter and interactive. We search for matching files and provide you with information and a prompt to decide if you want to run each expression."
+# echo
+# echo "This is for informational purposes to allow you to decide if you want to delete files that match a particular expression. You can exit at any time during this portion of the process."
+# echo
+# echo "The second portion of the process will delete any matching files for the expressions you decided to run. This can be very time consuming and you no longer have to interact with the interface. You can walk away and let it finish the process."
+# echo
+# read -n 1 -s -r -p "Press any key to continue"
+# 
+# clear
+# echo "As we have no control over how scanners name their files, expressions may match files you do not want to delete. Always be sure before choosing yes to each expression so you do not lose valuable data."
+# echo
+# read -n 1 -s -r -p "Press any key to continue"
+
+# Loop through expression-list
+while IFS=, read -u 3 -r title expression output message; do
+    
+    if [[ "${output}" == "count" ]]; then #Present user with count of matching files.
+        
+        clear
+        echo "Please be patient while we search files for instances of '$title'."
+        # cbz=$(find . -path "*/*.cbz" | while read f; do zipinfo -1 "$f" 2> /dev/null; done | grep -Ei "$expression" | wc -l)
+        # cbr=$(unrar lb '*/*.cbr' | grep -Ei "$expression" | wc -l)
+        i=0
+
+        for f in */*.cbz; do
+            cbz=$(zipinfo -1 "$f" 2> /dev/null | grep -Ei "$expression" | sed 's/.*\///g' | sed ':a;N;$!ba;s/\n/, /g')
+            if [[ $cbz ]]; then
+                ((i++))
+            fi
+        done
+
+        for f in */*.cbr; do
+            cbr=$(unrar lb "$f" | grep -Ei "$expression" | sed 's/.*\///g'| sed ':a;N;$!ba;s/\n/, /g')
+            if [[ $cbr ]]; then
+                ((i++))
+            fi
+        done
+
+    elif [[ $output == "list" ]]; then #Present user with list of matching files.
+        
+        clear
+        echo "Please be patient while we search files for instances of '$title'."
+        # cbz=$(find . -path "*/*.cbz" | while read f; do zipinfo -1 "$f" 2> /dev/null; done | grep -Ei "$expression")
+        # cbr=$(unrar lb '*/*.cbr' | grep -Ei "$expression")
+        i=0
+        
+        for f in */*.cbz; do
+            cbz=$(zipinfo -1 "$f" 2> /dev/null | grep -Ei "$expression" | sed 's/.*\///g' | sed ':a;N;$!ba;s/\n/, /g')
+            if [[ $cbz ]]; then
+                ((i++))
+                userlistCbz+="$(basename "$f"): $cbz\n"
+            fi
+        done
+
+        for f in */*.cbr; do
+            cbr=$(unrar lb "$f" | grep -Ei "$expression" | sed 's/.*\///g'| sed ':a;N;$!ba;s/\n/, /g')
+            if [[ $cbr ]]; then
+                ((i++))
+                userlistCbr+="$(basename "$f"): $cbr\n"
+            fi
+        done
+
+    else
+        clear
+        echo $output
+        echo "There is a problem reading the expression-list file. Please check the file and correct any errors before running this script again."
+        exit
+    fi
+
+    userlist="$userlistCbr$userlistCbz"
+    echo "Here is the list of '$title' files that will be deleted and the cbz/cbr where they reside."
+    echo -e $userlist | sort | sed '/^[[:space:]]*$/d' | more -n 20
+
+    while :; do
+
+        if [[ "${output}" == "count" ]]; then
+            read -p "The delete '$title' expression matches $i files. $message Do you want to delete them? ([y]es, [n]o, e[x]it)" -rsn1
+        elif [[ $output == "list" ]]; then
+            read -p "The delete '$title' expression matches the above files. $message Do you want to delete them? ([y]es, [n]o, e[x]it)" -rsn1
+        else
+            echo "There was a problem running the script. Please restart."
+            exit
+        fi
+
+        echo
+        
+            case $REPLY in
+                [Yy] )
+                    echo "Added to queue. Files that match '$title' will be deleted from your cbr/cbz files."
+                    sleep 3
+                    break
+                    ;;
+                [Nn] )
+                    echo "Skipping. Files matching '$title' will not be deleted from your cbr/cbz files."
+                    sleep 3
+                    break
+                    ;;
+                [Xx] )
+                    echo "Exiting the script."
+                    exit
+                    ;;
+                * )
+                    echo "I didn't understand that. Please choose an option."
+                    read -r -t 0.001
+                    ;;
+            esac
+
+    done
+
+done 3< <(sed -e 's/[[:space:]]*#.*// ; /^[[:space:]]*$/d' "expression-list")
+
