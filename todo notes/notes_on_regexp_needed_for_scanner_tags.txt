@@ -1,0 +1,118 @@
+1. Remove all 'Thumbs.db' files.
+2. Remove all '*.sfv' files, case insensitive.
+3. Remove all '*.txt' files, case insensitive.
+4. Remove all '*.nfo' files, case insensitive.
+5. Remove all '*.bat' files, case insensitive.
+6. Remove all '*.htm/html' files, case insensitive.
+7. Remove all parity files (PAR, P01, P02), case insensitive.
+8. Remove all '.DS_Store' files.
+9. Remove all '*.xml' files, case insensitive (pull out of script after done).
+10. Remove all tags listed below in the tags section using regexp wherever possible.
+11. Check all expressions against list of files first and generate a warning allowing the user to choose whether to run the check. Filter this only by the relevant word and remove duplicates before displaying to the user. Example: This will remove pages that start with the following patterns: Zatanna, Zoolander, zztagdouch, zIlOv3mYXB0x, zl337h4x0R69, Zombie.
+
+
+
+
+tags
+
+ends with tag/TAG
+
+Fables #025 (btx-DCP)/Fables-25-99tag.jpg
+Fables 033 (2005) (madvillain-DCP)/Fables_33-99-tag.jpg
+Fables 034 (2005) (madvillain-DCP)/Fables_34-99-TAG.jpg
+Fables 040 (2005) (Team-DCP)/Fables_40-99-tag.jpg
+Fables 042 (2005) (Team-DCP)/Fables_42_99-tag.jpg
+Fables 044 (2006) (Team-DCP)/Fables_044-99-tag.jpg
+Fables 045 (2006) (Team-DCP)/Fables_45-25-tag.jpg
+Fables 046 (2006) (Team-DCP)/Fables_46_025-tag.jpg
+Fables 047 (2006) (Team-DCP)/Fables_47-25-tag.jpg
+Fables 048 (2006) (Team-DCP)/Fables_48-25-tag.jpg
+Fables 053 (2006) (Team-DCP)/Fables_53-25-tag.jpg
+Fables 054 (2006) (Madvillain-DCP)/Fables_54-99-tag.jpg
+Fables 055 (With Crossing Midnight Preview) (2007) (madvillain-DCP)/Fables_55_Tag.jpg
+Fables 38 (2005) (Team-DCP)/Fables_38-99-tag.jpg
+Xpuckinfl tribute tag.jpg
+}Zeus{_tag.jpg
+zzzzRacerXtag.jpg
+red_foxtag.jpg
+Y - The Last Man 050 (2006) (Oroboros-DCP)/Y_TLM_50_Oroboros_ tag.jpg
+zzdcptag.jpg
+zzG-e-G tag.jpg
+z_js_tag.jpg
+YTheLastMan23_Tag.jpg
+
+starts with z/Z this 
+
+zbbs.jpg
+zxwondertwins-dcp.jpg
+z_z1.jpg
+zzbbs.jpg
+zz_dcp_tag_blue.jpg
+Iron Man v3 #077/zzzzzzzz.jpg
+Iron Man v3 #077/ZZZZZZZZZZZZZZZZZZZ.jpg
+Y - The Last Man 045 (2006) (Kryptonia-DCP)/zk0.jpg
+Y The Last Man 049 /zk1.jpg
+Vol3 #011/zzz_BeastCharming.jpg
+
+
+ends with 99
+
+Fables #027 [2004] (btx-DCP)/Fables-027-99.jpg
+Fables #031 (2005) (Team-DCP)/Fables_31-99.jpg
+Fables 032 (2005) (Team-DCP)/Fables_32-99.jpg
+Fables 036 (2005) (madvillain-DCP)/Fables_36_99.jpg
+Fables 037 (2005) (Team-DCP)/Fables_37_99.jpg
+
+00ABPC
+
+Alpha_Flight_v1_n118-00ABPC.jpg
+Alpha_Flight_v1_n124-00ABPC.jpg
+Alpha_Flight_v1_n129-00ABPC.jpg
+Alpha_Flight_v1_n119-00ABPC.jpg
+Alpha_Flight_v1_n123-00ABPC.jpg
+
+contains header
+
+IronMan80-Header.jpg
+IronMan81Header.jpg
+IronMan82Header.jpg
+IronMan87Header.jpg
+IronMan89Header.jpg
+IronManHeader.jpg
+[Header].jpg
+
+Kero
+
+Y-TheLastMan30_tag00_Mai-Kero.jpg
+Y-TheLastMan32_tag00_Mai-Kero.JPG
+
+[0-9]{2}-99
+
+Fables #22 (btx-DCP)/Fables22-99-DCP~inmemoryofjulie.jpg
+Y The Last Man 21 (btx-DCP)/YLM-21-99-splash.jpg
+Fables #023 (btx-DCP)/Fables023-99-btxscan_holdup.jpg
+
+ends with DCP
+
+Y-The Last Man-044/Y-Z Blastaar_DCP.jpg
+Iron Man v3 #86 [2004] (Samm-DCP)/samm-dcp.jpg
+Iron Man #85 [2004] (S-DCP)/xxdcp.jpg
+
+contains logo
+
+Iron_Man_vol-3_#58/logo2.jpg
+ocd_logo.jpg
+
+1 bigdpeter2.jpg
+Fables 033 (2005) (madvillain-DCP)/Fables_33-98-Eisner.jpg
+priscilla.jpg
+Iron Man 401/Nile.jpg
+pg9999999999999999999999-Iron Man ½ sig.jpg
+!!Preserved-By-Mr_Xcitement!!.jpg
+Uncanny X-men Annual 15/ag3nt.jpg
+YJ-052-00.jpg
+YJ-052-000.jpg
+Y-Last Man 35 (Jnx)/Tales from the Crypt.jpg
+AlphaFlight111_TAPSniperComicScan.jpg
+
+
