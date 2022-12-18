@@ -2,6 +2,7 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 regexpFile="$SCRIPT_DIR/expression-list"
+storagePath="."
 
 # Intro text
 
@@ -28,14 +29,14 @@ regexpFile="$SCRIPT_DIR/expression-list"
 # echo
 # read -n 1 -s -r -p "Press any key to continue"
 
-
+declare -a tmpFileList=() #pass between the loop and fileList
 declare -a expList=() # Array to hold the list of expressions that the user agrees to run
 declare -a fileList=() # Cbr/cbz files that contain matches from in the expList
 
 # Loop through expression-list
 while IFS=, read -u 3 -r title expression output message; do
     
-    declare -a tmpFileList=()
+    declare -a loopFileList=()
 
     if [[ "${output}" == "count" ]]; then #Present user with count of matching files.
         
@@ -48,16 +49,16 @@ while IFS=, read -u 3 -r title expression output message; do
         for f in */*.cbz; do
             cbz=$(zipinfo -1 "$f" 2> /dev/null | grep -Ei "$expression" | sed 's/.*\///g' | sed ':a;N;$!ba;s/\n/, /g')
             if [[ $cbz ]]; then
-                tmpFileList+=("$(basename "$f")")
                 ((i++))
+                loopFileList+=("$f")
             fi
         done
 
         for f in */*.cbr; do
             cbr=$(unrar lb "$f" | grep -Ei "$expression" | sed 's/.*\///g'| sed ':a;N;$!ba;s/\n/, /g')
             if [[ $cbr ]]; then
-                tmpFileList+=("$(basename "$f")")
                 ((i++))
+                loopFileList+=("$f")
             fi
         done
 
@@ -72,7 +73,7 @@ while IFS=, read -u 3 -r title expression output message; do
             cbz=$(zipinfo -1 "$f" 2> /dev/null | grep -Ei "$expression" | sed 's/.*\///g' | sed ':a;N;$!ba;s/\n/, /g')
             if [[ $cbz ]]; then
                 ((i++))
-                tmpFileList+=("$(basename "$f")")
+                loopFileList+=("$f")
                 userlistCbz+="$(basename "$f"): $cbz\n"
             fi
         done
@@ -80,26 +81,20 @@ while IFS=, read -u 3 -r title expression output message; do
         for f in */*.cbr; do
             cbr=$(unrar lb "$f" | grep -Ei "$expression" | sed 's/.*\///g'| sed ':a;N;$!ba;s/\n/, /g')
             if [[ $cbr ]]; then
-                tmpFileList+=("$(basename "$f")")
                 ((i++))
+                loopFileList+=("$f")
                 userlistCbr+="$(basename "$f"): $cbr\n"
             fi
         done
-
+        userlist="$userlistCbr$userlistCbz"
+        echo "Here is the list of '$title' files that will be removed and the cbz/cbr where they reside."
+        echo -e $userlist | sort | sed '/^[[:space:]]*$/d' | more -n 20
     else
         clear
         echo $output
         echo "There is a problem reading the expression-list file. Please check the file and correct any errors before running this script again."
         exit
     fi
-
-    # for b in "${tmpFileList[@]}"; do
-    #     echo "$b"
-    # done
-
-    userlist="$userlistCbr$userlistCbz"
-    echo "Here is the list of '$title' files that will be removed and the cbz/cbr where they reside."
-    echo -e $userlist | sort | sed '/^[[:space:]]*$/d' | more -n 20
 
     while :; do
 
@@ -118,13 +113,13 @@ while IFS=, read -u 3 -r title expression output message; do
                 [Yy] )
                     echo "Added to queue. Files that match '$title' will be removed from your cbr/cbz files."
                     expList+=( "${expression}" ) # Add expression to the list to be run.
-                    fileList+=( "${tmpFileList[@]}" ) # Add list of cbr/cbz files
-                    sleep 3
+                    tmpFileList+=( "${loopFileList[@]}" ) # Add list of cbr/cbz files
+                    # sleep 3
                     break
                     ;;
                 [Nn] )
                     echo "Skipping. Files matching '$title' will not be removed from your cbr/cbz files."
-                    sleep 3
+                    # sleep 3
                     break
                     ;;
                 [Xx] )
@@ -141,22 +136,59 @@ while IFS=, read -u 3 -r title expression output message; do
 
 done 3< <(sed -e 's/[[:space:]]*#.*// ; /^[[:space:]]*$/d' "$regexpFile")
 
-if [[ ${fileList[@]} -eq 0 ]] || [[ ${expList[@]} -eq 0 ]]; then
+while IFS= read -r -d '' x; do
+    fileList+=("$x")
+done < <(printf "%s\0" "${tmpFileList[@]}" | sort -uz)
+
+if [[ ${#fileList[@]} -eq 0 ]] || [[ ${#expList[@]} -eq 0 ]]; then
     echo "You have have chosen to not remove any files. Exiting the script."
     exit
 else
     echo "Please wait while we remove the chosen files from your cbr/cbz files. This may take some time."
+    # sleep 3
 fi
+
+cbNum=${#fileList[@]}
+cbProc=0
+expNum=0
+
+mkdir -p "$storagePath/000_removed_by_cb-scripts"
+storageDir="$storagePath/000_removed_by_cb-scripts"
 
 for cbFile in "${fileList[@]}"; do
    
     if grep -Eiq ".+\.cbz$" <<< "$cbFile"; then
-        echo "CBZ: $cbFile"
+        echo "Processing '$cbFile'"
+        for exp in "${expList[@]}"; do
+            matchFile=$(zipinfo -1 "$cbFile" | grep -Pi "$exp")
+            if [[ $matchFile == *$'\n'* ]]; then
+                IFS=$'\n' read -r -d '' -a multiFile <<< "$matchFile"
+                for mult in "${multiFile[@]}"; do
+                    if [[ ! -z $matchFile ]];then
+                        # echo "$mult"
+                        unzip -jp "$cbFile" "$mult" > "$storageDir/$(basename "${cbFile}")-$(basename "${mult}")"
+                    fi 
+                done
+            else
+                if [[ ! -z $matchFile ]];then
+                    # echo "$matchFile"
+                    unzip -jp "$cbFile" "$matchFile" > "$storageDir/$(basename "${cbFile}")-${matchFile}"
+                fi 
+            fi
+
+        done
+        ((cbProc++))
     elif grep -Eiq ".+\.cbr" <<< "$cbFile"; then
-        echo "CBR: $cbFile"
+        # echo "CBR: $cbFile"
+        # for exp in "${expList[@]}"; do
+        #     echo "$exp"
+        # done
+        ((cbProc++))
     else
         echo "The file, $cbFile, is neither a CBR or CBZ file. Skipping."
     fi
 
 done
+
+echo "File processing complete. <todo> files removed from $cbProc of $cbNum cbr/cbz files. All removed files can be found in $storageDir/."
 

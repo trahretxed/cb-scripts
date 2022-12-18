@@ -8,8 +8,8 @@
 # delete wanted files in advance. The final column is the message column. This is a message that is presented to the user when they are prompted whether 
 # they want to run the expression in column 1. This should include warnings or things the user should be watching before deciding to run the expression.
 
-# Thumbs.db,Thumbs\.db$,count,It is likely safe to delete these files.
-sfv,.+\.sfv$,list,It is likely safe to delete these files.
+Thumbs.db,Thumbs\.db$,count,It is likely safe to delete these files.
+sfv,.+\.sfv$,count,It is likely safe to delete these files.
 # txt,.+\.txt$,count,It is likely safe to delete these files.
 # nfo,.+\.nfo$,count,It is likely safe to delete these files.
 # bat,.+\.bat$,count,It is likely safe to delete these files. # This isn't the dumbest thing I've seen left in a cbr/z
