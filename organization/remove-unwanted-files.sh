@@ -93,6 +93,10 @@ while IFS=, read -u 3 -r title expression output message; do
         exit
     fi
 
+    # for b in "${tmpFileList[@]}"; do
+    #     echo "$b"
+    # done
+
     userlist="$userlistCbr$userlistCbz"
     echo "Here is the list of '$title' files that will be removed and the cbz/cbr where they reside."
     echo -e $userlist | sort | sed '/^[[:space:]]*$/d' | more -n 20
@@ -113,9 +117,8 @@ while IFS=, read -u 3 -r title expression output message; do
             case $REPLY in
                 [Yy] )
                     echo "Added to queue. Files that match '$title' will be removed from your cbr/cbz files."
-                    for c in "${fileList[@]}"; do
-                        echo "Deleting '$c'."
-                    done
+                    expList+=( "${expression}" ) # Add expression to the list to be run.
+                    fileList+=( "${tmpFileList[@]}" ) # Add list of cbr/cbz files
                     sleep 3
                     break
                     ;;
@@ -137,4 +140,23 @@ while IFS=, read -u 3 -r title expression output message; do
     done
 
 done 3< <(sed -e 's/[[:space:]]*#.*// ; /^[[:space:]]*$/d' "$regexpFile")
+
+if [[ ${fileList[@]} -eq 0 ]] || [[ ${expList[@]} -eq 0 ]]; then
+    echo "You have have chosen to not remove any files. Exiting the script."
+    exit
+else
+    echo "Please wait while we remove the chosen files from your cbr/cbz files. This may take some time."
+fi
+
+for cbFile in "${fileList[@]}"; do
+   
+    if grep -Eiq ".+\.cbz$" <<< "$cbFile"; then
+        echo "CBZ: $cbFile"
+    elif grep -Eiq ".+\.cbr" <<< "$cbFile"; then
+        echo "CBR: $cbFile"
+    else
+        echo "The file, $cbFile, is neither a CBR or CBZ file. Skipping."
+    fi
+
+done
 

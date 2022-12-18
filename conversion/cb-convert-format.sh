@@ -67,7 +67,7 @@ if [[ $totalSumAfter -ne totalFilesAFter ]];
 else
     echo "Checksum ${totalSumAfter} matches total files ${totalFilesAfter} after running"   
 fi
-if [[ $totalCbrComplete -ne totalCbzNew ]] || [[ $totalFilesBefore -ne $totalFilesAfter ]]
+if [[ $totalCbrComplete -ne $totalCbzNew ]] || [[ $totalFilesBefore -ne $totalFilesAfter ]]
     then
     echo "The total number of new CBZ files ${totalCbzNew} does not equal the total number of archived CBR files ${totalCbrComplete} or the total number of files before ${totalFilesBefore} does not equal the total number of files after ${totalFilesAfter}"
     echo "Please check the logs for more details"
