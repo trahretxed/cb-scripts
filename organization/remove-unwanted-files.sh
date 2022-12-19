@@ -6,7 +6,7 @@ storagePath="."
 
 # Intro text
 
-# clear
+clear
 # echo "This script is intended to remove unwanted files from cbz and cbr files. These may include files left behind by the OS, informational text files, or tags/signature images left by the scanner." 
 # echo
 # echo "Regular expressions are used to match the files from a blacklist that is maintained in a file called 'expression-list'. This file may be edited to add or remove expressions as needed."
@@ -23,7 +23,7 @@ storagePath="."
 # echo "The second portion of the process will remove any matching files for the expressions you decided to run. This can be very time consuming and you no longer have to interact with the interface. You can walk away and let it finish the process."
 # echo
 # read -n 1 -s -r -p "Press any key to continue"
-# 
+
 # clear
 # echo "As we have no control over how scanners name their files, expressions may match files you do not want to remove. Always be sure before choosing yes to each expression so you do not lose valuable data."
 # echo
@@ -37,6 +37,9 @@ declare -a fileList=() # Cbr/cbz files that contain matches from in the expList
 while IFS=, read -u 3 -r title expression output message; do
     
     declare -a loopFileList=()
+    unset userListCbr
+    unset userListCbz
+    unset userList
 
     if [[ "${output}" == "count" ]]; then #Present user with count of matching files.
         
@@ -47,7 +50,7 @@ while IFS=, read -u 3 -r title expression output message; do
         i=0
 
         for f in */*.cbz; do
-            cbz=$(zipinfo -1 "$f" 2> /dev/null | grep -Ei "$expression" | sed 's/.*\///g' | sed ':a;N;$!ba;s/\n/, /g')
+            cbz=$(zipinfo -1 "$f" 2> /dev/null | grep -Ei "${expression}" | sed 's/.*\///g' | sed ':a;N;$!ba;s/\n/, /g')
             if [[ $cbz ]]; then
                 ((i++))
                 loopFileList+=("$f")
@@ -55,7 +58,7 @@ while IFS=, read -u 3 -r title expression output message; do
         done
 
         for f in */*.cbr; do
-            cbr=$(unrar lb "$f" | grep -Ei "$expression" | sed 's/.*\///g'| sed ':a;N;$!ba;s/\n/, /g')
+            cbr=$(unrar lb "$f" | grep -Ei "${expression}" | sed 's/.*\///g'| sed ':a;N;$!ba;s/\n/, /g')
             if [[ $cbr ]]; then
                 ((i++))
                 loopFileList+=("$f")
@@ -74,7 +77,7 @@ while IFS=, read -u 3 -r title expression output message; do
             if [[ $cbz ]]; then
                 ((i++))
                 loopFileList+=("$f")
-                userlistCbz+="$(basename "$f"): $cbz\n"
+                userListCbz+="$(basename "$f"): $cbz\n"
             fi
         done
 
@@ -83,12 +86,14 @@ while IFS=, read -u 3 -r title expression output message; do
             if [[ $cbr ]]; then
                 ((i++))
                 loopFileList+=("$f")
-                userlistCbr+="$(basename "$f"): $cbr\n"
+                userListCbr+="$(basename "$f"): $cbr\n"
             fi
         done
-        userlist="$userlistCbr$userlistCbz"
+
+        userList="$userListCbr$userListCbz"
         echo "Here is the list of '$title' files that will be removed and the cbz/cbr where they reside."
-        echo -e $userlist | sort | sed '/^[[:space:]]*$/d' | more -n 20
+        echo -e $userList | sort | sed '/^[[:space:]]*$/d' | more -n 20
+
     else
         clear
         echo $output
@@ -98,8 +103,11 @@ while IFS=, read -u 3 -r title expression output message; do
 
     while :; do
 
-        if [[ "${output}" == "count" ]]; then
-            read -p "The delete '$title' expression matches $i files. $message Do you want to remove them? ([y]es, [n]o, e[x]it)" -rsn1
+        if [[ $i == 0 ]];then
+            echo "No matches found."
+            break
+        elif [[ "${output}" == "count" ]]; then
+            read -p "The delete '$title' expression found matches in $i cbr/cbz files. $message Do you want to remove them? ([y]es, [n]o, e[x]it)" -rsn1
         elif [[ $output == "list" ]]; then
             read -p "The delete '$title' expression matches the above files. $message Do you want to remove them? ([y]es, [n]o, e[x]it)" -rsn1
         else
@@ -114,12 +122,12 @@ while IFS=, read -u 3 -r title expression output message; do
                     echo "Added to queue. Files that match '$title' will be removed from your cbr/cbz files."
                     expList+=( "${expression}" ) # Add expression to the list to be run.
                     tmpFileList+=( "${loopFileList[@]}" ) # Add list of cbr/cbz files
-                    # sleep 3
+                    # sleep 2
                     break
                     ;;
                 [Nn] )
                     echo "Skipping. Files matching '$title' will not be removed from your cbr/cbz files."
-                    # sleep 3
+                    # sleep 2
                     break
                     ;;
                 [Xx] )
@@ -140,17 +148,20 @@ while IFS= read -r -d '' x; do
     fileList+=("$x")
 done < <(printf "%s\0" "${tmpFileList[@]}" | sort -uz)
 
+clear
 if [[ ${#fileList[@]} -eq 0 ]] || [[ ${#expList[@]} -eq 0 ]]; then
     echo "You have have chosen to not remove any files. Exiting the script."
     exit
 else
     echo "Please wait while we remove the chosen files from your cbr/cbz files. This may take some time."
-    # sleep 3
+    # sleep 2
 fi
+
+SECONDS=0
 
 cbNum=${#fileList[@]}
 cbProc=0
-expNum=0
+remNum=0
 
 mkdir -p "$storagePath/000_removed_by_cb-scripts"
 storageDir="$storagePath/000_removed_by_cb-scripts"
@@ -158,31 +169,52 @@ storageDir="$storagePath/000_removed_by_cb-scripts"
 for cbFile in "${fileList[@]}"; do
    
     if grep -Eiq ".+\.cbz$" <<< "$cbFile"; then
-        echo "Processing '$cbFile'"
         for exp in "${expList[@]}"; do
             matchFile=$(zipinfo -1 "$cbFile" | grep -Pi "$exp")
             if [[ $matchFile == *$'\n'* ]]; then
                 IFS=$'\n' read -r -d '' -a multiFile <<< "$matchFile"
                 for mult in "${multiFile[@]}"; do
-                    if [[ ! -z $matchFile ]];then
-                        # echo "$mult"
-                        unzip -jp "$cbFile" "$mult" > "$storageDir/$(basename "${cbFile}")-$(basename "${mult}")"
+                    if [[ ! -z $mult ]];then
+                        echo "Removing '$mult' from '$cbFile'"
+                        unzip -jp "$cbFile" "$mult" > "$storageDir/$(basename "${cbFile}")_$(date +%s.%3N)_$(basename "${mult}")"
+                        zip -dq "$cbFile" "$mult"
+                        ((remNum++))
                     fi 
                 done
             else
                 if [[ ! -z $matchFile ]];then
-                    # echo "$matchFile"
-                    unzip -jp "$cbFile" "$matchFile" > "$storageDir/$(basename "${cbFile}")-${matchFile}"
+                    echo "Removing '$matchFile' from '$cbFile'"
+                    unzip -jp "$cbFile" "$matchFile" > "$storageDir/$(basename "${cbFile}")_$(date +%s.%3N)_$(basename "${matchFile}")"
+                    zip -dq "$cbFile" "$matchFile"
+                    ((remNum++))
                 fi 
             fi
 
         done
         ((cbProc++))
     elif grep -Eiq ".+\.cbr" <<< "$cbFile"; then
-        # echo "CBR: $cbFile"
-        # for exp in "${expList[@]}"; do
-        #     echo "$exp"
-        # done
+        for exp in "${expList[@]}"; do
+            matchFile=$(unrar lb "$cbFile" | grep -Pi "$exp")
+            if [[ $matchFile == *$'\n'* ]]; then
+                IFS=$'\n' read -r -d '' -a multiFile <<< "$matchFile"
+                for mult in "${multiFile[@]}"; do
+                    if [[ ! -z $mult ]];then
+                        echo "Removing '$mult' from '$cbFile'"
+                        unrar p -idq "$cbFile" "$mult" > "$storageDir/$(basename "${cbFile}")_$(date +%s.%3N)_$(basename "${mult}")"
+                        rar d -idq "$cbFile" "$matchFile"
+                        ((remNum++))
+                    fi 
+                done
+            else
+                if [[ ! -z $matchFile ]];then
+                    echo "Removing '$matchFile' from '$cbFile'"
+                    unrar p -idq "$cbFile" "$matchFile" > "$storageDir/$(basename "${cbFile}")_$(date +%s.%3N)_$(basename "${matchFile}")"
+                    rar d -idq "$cbFile" "$matchFile"
+                    ((remNum++))
+                fi 
+            fi
+
+        done
         ((cbProc++))
     else
         echo "The file, $cbFile, is neither a CBR or CBZ file. Skipping."
@@ -190,5 +222,9 @@ for cbFile in "${fileList[@]}"; do
 
 done
 
-echo "File processing complete. <todo> files removed from $cbProc of $cbNum cbr/cbz files. All removed files can be found in $storageDir/."
+let "hours=SECONDS/3600"
+let "minutes=(SECONDS%3600)/60"
+let "seconds=(SECONDS%3600)%60"
+ 
+echo "File processing complete. $remNum files removed from $cbProc of $cbNum cbr/cbz files in $hours:$minutes:$seconds. All removed files can be found in $storageDir/."
 

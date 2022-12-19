@@ -10,11 +10,17 @@
 
 Thumbs.db,Thumbs\.db$,count,It is likely safe to delete these files.
 sfv,.+\.sfv$,count,It is likely safe to delete these files.
-# txt,.+\.txt$,count,It is likely safe to delete these files.
-# nfo,.+\.nfo$,count,It is likely safe to delete these files.
-# bat,.+\.bat$,count,It is likely safe to delete these files. # This isn't the dumbest thing I've seen left in a cbr/z
-# html,.+\.htm[l]?$,count,It is likely safe to delete these files.
-# parity,.+\.P(A|[0-9])(R|[0-9])$,count, It is likely safe to delete these files.
-# DS_Stores,\.DS_Store$,count,It is likely safe to delete these files.
-# xml,.+\.xml$,count,Files such as Comicinfo.xml store metadata. Check the list above for a list of matching files. Do not delete these files if you wish to keep your metadata.
-# *tag.jpg,.+tag\.jpg,list,This removes any jpg files that end with 'tag'.
+txt,.+\.txt$,count,It is likely safe to delete these files.
+nfo,.+\.nfo$,count,It is likely safe to delete these files.
+bat,.+\.bat$,count,It is likely safe to delete these files. # This isn't the dumbest thing I've seen left in a cbr/z
+html,.+\.htm[l]?$,count,It is likely safe to delete these files.
+parity,.+\.P(A|[0-9])(R|[0-9])$,count, It is likely safe to delete these files.
+DS_Stores,\.DS_Store$,count,It is likely safe to delete these files.
+xml,.+\.xml$,list,Files such as Comicinfo.xml store metadata. Check the list above for a list of matching files. Do not delete these files if you wish to keep your metadata.
+ends with tag,.+tag\.jpg,list,This removes any jpg files that end with 'tag'.
+tags starting with z,(^|\/)(zz|zb|zb|zk|zx|z_),list,This removes many files that start with Z. Check the above list carefully as it may remove files you want to keep. It is highly recommended to remove any cbr/cbz files that contain matches you want to keep before running this expression.
+99 tag,[0-9]{2}(-|_)99,list,This removes all files that are tagged as page 99. This is common among one scanning group. It is possible it will match a comic page if it is 99 or more pages so please check carefully.
+misc scanner tags part 1,00ABPC\.jpg$|Header.\jpg$|Header\]\.jpg$|tag00_Mai-Kero.\jpg$|dcp\.jpg$,list,The first of many miscellaneous scanner tags. Please check the files above carefully.
+misc scanner tags part 2,logo2?\.jpg$|bigdpeter2?\.jpg$|priscilla\.jpg$|Nile\.jpg$|sig\.jpg$|Mr_Xcitement,list,The second of many miscellaneous scanner tags. Please check the files above carefully.
+misc scanner tags part 3,ag3nt\.jpg$|Crypt\.jpg$|Scan.\jpg$|[0-9]{2}-98-Eisner\.jpg|pspbrwse.jbf$,list,The third of many miscellaneous scanner tags. Please check the files above carefully.
+
