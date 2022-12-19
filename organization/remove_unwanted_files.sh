@@ -1,7 +1,7 @@
 #! /bin/bash
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-regexpFile="$SCRIPT_DIR/expression-list"
+regexpFile="$SCRIPT_DIR/expression_list"
 storagePath="."
 
 # Intro text
