@@ -201,7 +201,7 @@ for cbFile in "${fileList[@]}"; do
                     if [[ ! -z $mult ]];then
                         echo "Removing '$mult' from '$cbFile'"
                         unrar p -idq "$cbFile" "$mult" > "$storageDir/$(basename "${cbFile}")_$(date +%s.%3N)_$(basename "${mult}")"
-                        rar d -idq "$cbFile" "$matchFile"
+                        rar d -idq "$cbFile" "$mult"
                         ((remNum++))
                     fi 
                 done
