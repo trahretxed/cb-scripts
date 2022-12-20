@@ -225,6 +225,7 @@ done
 let "hours=SECONDS/3600"
 let "minutes=(SECONDS%3600)/60"
 let "seconds=(SECONDS%3600)%60"
+elapsedTime=$(printf "%02d" $hours):$(printf "%02d" $minutes):$(printf "%02d" $seconds)
  
-echo "File processing complete. $remNum files removed from $cbProc of $cbNum cbr/cbz files in $hours:$minutes:$seconds. All removed files can be found in $storageDir/."
+echo "File processing complete. $remNum files removed from $cbProc of $cbNum cbr/cbz files in $elapsedTime. All removed files can be found in $storageDir/."
 
